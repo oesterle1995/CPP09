@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/20 17:34:32 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/07/21 20:45:56 by aoesterl         ###   ########.fr       */
+/*   Created: 2026/07/22 17:18:30 by aoesterl          #+#    #+#             */
+/*   Updated: 2026/07/22 22:10:05 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,59 +35,91 @@ BitcoinExchange::~BitcoinExchange()
     return;
 }
 
-
-void BitcoinExchange::normalize_space(std::string& line)
-{
-    std::string::iterator it;
-    it = line.begin(); 
-    while(it != line.end())
-    { 
-        if(std::isspace(*it))
-            it = line.erase(it);
-        else
-            it++;
-    }
-}
-
-void BitcoinExchange::check_data_format(std::string s1, std::string s2)
+bool BitcoinExchange::valid_date(int year, int month, int day)
 { 
-    
+   int d_month[13] = {0, 31, 28, 31, 30, 31, 30, 31 , 31 ,30, 31, 30, 31};
+    if(year < 2009 || month < 1 || month > 12 ||  day < 1)
+    { 
+        return(false);
+    }
+    if((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+        d_month[2] = 29;
+    if(day > d_month[month])
+    { 
+        return(false);
+    }
+    return(true);
+} 
 
-    
-}
-
-map_pair_type BitcoinExchange::is_formatted(std::string& line, char c)
+bool BitcoinExchange::is_formatted(const std::string& line, const int& nb_line, std::string& filename, const char delim)
 {
-    map_pair_type pair;
-    std::string::size_type n;
+    int year;
+    int month;
+    int day;
+    char dash1;
+    char dash2;
+    char sep;
+    double value;
+    char extra;
+    std::istringstream is(line);
+    is >> year >> dash1 >> month >> dash2 >> day >> sep >> value;
+    
+    if(line == "date,exchange_rate" || line == "date | value")
+        return(false);
+    if(line.empty() || line.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
+        return(false);
+    if(is.fail() || dash1 != '-' || dash2 != '-' || sep != delim || (is >> extra))
+    {
+        std::cerr << "Error : File : " << filename <<  " line :" << nb_line << " : Format line is : YYYY-MM-DD" \
+        << delim << "value(float) | Currently this line is : " << line << std::endl;
+        return(false);
+    }
+    if(valid_date(year, month, day) == false)
+    { 
+        std::cerr << "Error : File : " << filename <<  " line : " << nb_line \
+        << " the date is unvalid (before 2009) or doesn't exist | Currently this line is : " << line << std::endl;
+        return(false);
+    }
+    else
+        return(true);
+} 
+
+void BitcoinExchange::fill_data(const std::string& line)
+{
     std::string s1;
     std::string s2;
-    
-    normalize_space(line);
-    n = line.find(c);
-    if(n == std::string::npos)
-        throw std::logic_error("Error : Bad format file.csv : line format : YYYY-MM-DD , value");
+    double nb;
+    int n;
+    n = line.find(',');
     s1 = line.substr(0, n);
     s2 = line.substr(n + 1);
+    nb = std::strtod(s2.c_str(), NULL);
+    this->_database.insert(std::make_pair(s1, nb));
 }
 
-void BitcoinExchange::fill_price_map(map_str_f& _database, std::string line)
-{ 
-    is_formatted(line, ',');
-    { 
-        std::string msg = "Error : Format line isn't good in the csv :" + line;
-        throw std::logic_error(msg); 
-    } 
-}
-
-void BitcoinExchange::download_price_map(std::ifstream& input_stream)
+void BitcoinExchange::download_price_map(std::ifstream& input_stream, std::string filename)
 { 
    std::string line;
+   int nb_line = 0;
    while(std::getline(input_stream, line))
     {
-        if(line.empty() || line.find_first_not_of(" \t\n\v\f\r\n") == std::string::npos)
+        nb_line++;
+        if(line.empty() || line.find_first_not_of(" \t\n\v\f\r") == std::string::npos)
             continue;
-        std::cout << line << std::endl;
-        fill_price_map(this->_database, line);
+        if(is_formatted(line, nb_line, filename, ',') == false)
+            continue;
+        fill_data(line);
     }
+}
+
+map_str_d::const_iterator BitcoinExchange::get_data_value(const std::string& key) const
+{ 
+    map_str_d::const_iterator it;
+    it = this->_database.find(key);
+    return(it);
+}
+
+map_str_d::const_iterator BitcoinExchange::end() const
+{ 
+    return(this->_database.end());
 }
