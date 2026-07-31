@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   BitcoinExchange.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
+/*   By: arthurito <arthurito@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/14 18:14:07 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/07/24 21:46:41 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/07/31 16:21:46 by arthurito        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,32 @@
 #include <cstdlib>
 #include <sstream>
 #define ERROR -1
+#define TRUE 1
+#define FALSE 0
+#define PASS 2
 
 typedef std::map<std::string,double> map_str_d;
 typedef std::pair<std::string, double> map_pair_type;
 
-
 class BitcoinExchange
 {
     private :
-        typedef  void (*ptr_ft_err_msg)(std::string& filename, const std::string& line, \
-            int nb_line, std::string msg_error);
-        map_str_d _database;
+        std::map<std::string,double> _database;
+        typedef  void (*ptr_ft)(const std::string& line, int nb_line, std::string msg_error);
+        
+        //ft_error_message
+        static void throw_datacsv(const std::string& line, int nb_line, std::string msg_error);
+        static void throw_input_file(const std::string& line, int nb_line, std::string msg_error);
+        
+        //ft classic
         bool valid_date(int year, int month, int day);
-        bool BitcoinExchange::is_formatted(const std::string& line, ptr_ft_err_msg ft_error, \
-            std::string& filename, int nb_line, char delim, bool check_limits = false);
-        void fill_data(const std::string& line);
+        int parsing_date(const std::string& s1, ptr_ft ft_error, int nb_line);
+        int parsing_value(const std::string& s2, ptr_ft ft_error, int nb_line);
+        int substr_s1_s2(const std::string line, ptr_ft ft_error, \
+            std::string& s1, std::string&s2, char delim, int nb_line);
+        int analyse_line_data(const std::string& line, map_pair_type& pair, int nb_line);
+        int analyse_input_line(const std::string& line, map_pair_type& pair);
     public:
-
     
         //Canonnic form
         BitcoinExchange();
@@ -45,9 +54,8 @@ class BitcoinExchange
         ~BitcoinExchange();
         
         //function
-        bool download_price_map(std::ifstream& input_stream, std::string filename);
-        void BitcoinExchange::display_result_btc(std::ifstream& file_value, std::string filename);
-        //Getter
+        int download_price_map(std::ifstream& ifs_data);
+        void display_result_btc(std::ifstream& ifs_txt);
         map_str_d::const_iterator get_data_value(const std::string& key) const;
         map_str_d::const_iterator end() const;
-};
+};      
