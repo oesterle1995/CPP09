@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/14 18:34:47 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/08/17 18:56:56 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/08/18 18:51:29 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ std::vector<int> Ford_johnson_algorithm(std::vector<int> v_tab)
         std::cout << (*it).a << " | ";
         it++;
     }
-    it = v_pair.begin();
+     it = v_pair.begin();
     std::cout << std::endl << "--- b : SMALLEST v_pair ---  " << std::endl;
     while(it != v_pair.end())
     { 
