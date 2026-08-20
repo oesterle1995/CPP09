@@ -7,7 +7,7 @@ typedef struct s_element
 { 
     int value;
     int index;
-    std::vector<t_element> losers;
+    std::vector<s_element> losers;
 }t_element;
 
 bool is_valid_number(const std::string& str_arg)
@@ -37,9 +37,8 @@ void print_array(const std::vector<t_element>& tab)
     std::cout << "---- Element tab----- " << std::endl;
     while(it != tab.end())
     {
-        std::cout << "index : " << (*it).index << std::endl;
-        std::cout << "value : " << (*it).value << std::endl;
-
+        std::cout << "index : " << (*it).index;
+        std::cout << " | value : " << (*it).value << std::endl;
         it++;
     }
 }
@@ -54,17 +53,86 @@ void init_tab_element(const std::string& str_arg, std::vector<t_element>& tab_el
     {
         node.value = nb;
         node.index = i;
+        tab_element.push_back(node);
         i++;
     }
 }
 
+void tree_of_losers(std::vector<t_element>& tab, std::string prefix = "")
+{
+    std::string new_prefix;
+    int end = tab.size() - 1;
+    if(tab.empty())
+        return;
+    for(int i = 0; i < tab.size(); i++)
+    {
+        std::cout << prefix;
+        if(i != end)
+            std::cout << "├── ";
+        else
+            std::cout << "└── ";
+        std::cout << "[Val: " << tab[i].value << " | Idx: " << tab[i].index << "]" << std::endl;
+        if(i != end)
+            new_prefix = prefix + "│\t";
+        else
+            new_prefix = prefix + "\t";
+        tree_of_losers(tab[i].losers, new_prefix);
+    }
+}
 
-std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& winners)
+std::vector<t_element> new_pairs(std::vector<t_element>& tab)
 { 
-    
+    std::vector<t_element> new_pairs;
+    for(int i = 0; i < tab.size(); i += 2)
+    { 
+        if(tab[i].value < tab[i + 1].value)
+        { 
+            tab[i + 1].losers.push_back(tab[i]);
+            new_pairs.push_back(tab[i+1]);
+        }
+        else
+        {
+            tab[i].losers.push_back(tab[i+1]); 
+            new_pairs.push_back(tab[i]);
+        }
+    }
+    return new_pairs;
+}
 
-
-
+std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
+{
+    t_element pend;
+    if(tab.size() <= 1)
+    { 
+        std::cout << "--- stop upping ---" << std::endl;
+    }
+    //si la liste est impair le dernier element est mis dans un pend;
+    if(tab.size() % 2 != 0)
+    {
+        pend = tab[tab.size() - 1];
+        std::cout << "pend : " << " value -> " << pend.value << " index -> " << pend.index << std::endl;
+        tab.pop_back();
+    }
+    // on compare maintenant les pairs de deux et les gagnantes vont rester dans tab_element, les perdants iront dans les std::vector<t_element> losers;
+    // std::vector<t_element> new_pairs;
+    // for(int i = 0; i < tab.size(); i += 2)
+    // { 
+    //     if(tab[i].value < tab[i + 1].value)
+    //     { 
+    //         tab[i + 1].losers.push_back(tab[i]);
+    //         new_pairs.push_back(tab[i+1]);
+    //     }
+    //     else
+    //     {
+    //         tab[i].losers.push_back(tab[i+1]); 
+    //         new_pairs.push_back(tab[i]);
+    //     }
+    // }
+    // tab = new_pairs;
+    tab = new_pairs(tab);
+    std::cout << "--- TREE OF LOSERS ---- " << std::endl;
+    tree_of_losers(tab);
+    return(tab);
 }
 
 int main(int argc, char **argv)
