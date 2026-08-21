@@ -29,20 +29,6 @@ bool is_valid_number(const std::string& str_arg)
     return(true);
 }
 
-void print_array(const std::vector<t_element>& tab)
-{ 
-    std::vector<t_element>::const_iterator it;
-    // std::vector<t_element>::const_iterator it_losers;
-    it = tab.begin();
-    std::cout << "---- Element tab----- " << std::endl;
-    while(it != tab.end())
-    {
-        std::cout << "index : " << (*it).index;
-        std::cout << " | value : " << (*it).value << std::endl;
-        it++;
-    }
-}
-
 void init_tab_element(const std::string& str_arg, std::vector<t_element>& tab_element)
 {
     int i = 0;
@@ -58,7 +44,7 @@ void init_tab_element(const std::string& str_arg, std::vector<t_element>& tab_el
     }
 }
 
-void tree_of_losers(std::vector<t_element>& tab, std::string prefix = "")
+void tree_of_losers(const std::vector<t_element>& tab, std::string prefix = "")
 {
     std::string new_prefix;
     int end = tab.size() - 1;
@@ -80,6 +66,15 @@ void tree_of_losers(std::vector<t_element>& tab, std::string prefix = "")
     }
 }
 
+void debug_ford(const std::vector<t_element>& tab, const std::vector<t_element>& pend)
+{ 
+    std::cout << "   --- TREE OF LOSERS ---- " << std::endl;
+    tree_of_losers(tab);
+    std::cout << std::endl << "   --- PEND --- " << std::endl;
+    tree_of_losers(pend);
+    std::cout << std::endl;
+}
+
 std::vector<t_element> new_pairs(std::vector<t_element>& tab)
 { 
     std::vector<t_element> new_pairs;
@@ -99,45 +94,98 @@ std::vector<t_element> new_pairs(std::vector<t_element>& tab)
     return new_pairs;
 }
 
-std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
+
+int find_winner_pos(std::vector<t_element>& new_tab, t_element& target)
+{ 
+    for(int i = 0; i < new_tab.size(); i++)
+    { 
+        if(new_tab[i].index == target.index)
+        { 
+            std::cout << "FIND : " << new_tab[i].value << std::endl; 
+             return i;
+        }
+            return i;
+    }
+    return(0);
+}
+
+void jacob_stahll_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend, const std::vector<int>& jacob_tab)
 {
-    t_element pend;
+    int jacob_range = 0;
+    int jacob_index;
+    int real_index;
+    t_element elem_insert;
+    std::vector<t_element> new_tab = tab;
+    for(int i = 0; i < jacob_tab.size(); i++)
+    { 
+        jacob_index = jacob_tab[i] - 1; // ex : 3  devient index 2
+        if(i != 0)
+            jacob_range = jacob_tab[i] - jacob_tab[i - 1]; 
+        for(int i = 0; jacob_range - i > 0; i++)
+        { 
+            real_index = find_winner_pos(new_tab, tab[jacob_index - i]); // recherche dans tab[2]
+            elem_insert = new_tab[real_index].losers.back(); // real_index devient la position avec les elements dans la liste;
+            new_tab[real_index].losers.pop_back();
+            // methode dichotomique d'insertion;
+        }
+    }
+
+}
+
+std::vector<int> generate_jacob_sequel(int half_list)
+{
+    std::vector<int> jacob_tab;
+    jacob_tab.push_back(1);
+    int j_prev = 1;
+    int j_curr = 3;
+
+    while(j_curr < half_list)
+    {
+        jacob_tab.push_back(j_curr);
+        int next = j_curr + 2 * j_prev;
+        j_prev = j_curr;
+        j_curr = next;
+    }
+    jacob_tab.push_back(j_curr);
+    
+    for(int i = 0; i < jacob_tab.size(); i++)
+        std::cout << jacob_tab[i] << std::endl;
+    return(jacob_tab);
+}
+
+std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab, const std::vector<int>& jacob_tab)
+{
+    std::vector<t_element> pend;
+    static int lvl;
+    // ZONE RECURSIVE
     if(tab.size() <= 1)
     { 
         std::cout << "--- stop upping ---" << std::endl;
+        return(tab);
     }
     //si la liste est impair le dernier element est mis dans un pend;
     if(tab.size() % 2 != 0)
     {
-        pend = tab[tab.size() - 1];
-        std::cout << "pend : " << " value -> " << pend.value << " index -> " << pend.index << std::endl;
+        pend.push_back(tab[tab.size() - 1]);
         tab.pop_back();
     }
-    // on compare maintenant les pairs de deux et les gagnantes vont rester dans tab_element, les perdants iront dans les std::vector<t_element> losers;
-    // std::vector<t_element> new_pairs;
-    // for(int i = 0; i < tab.size(); i += 2)
-    // { 
-    //     if(tab[i].value < tab[i + 1].value)
-    //     { 
-    //         tab[i + 1].losers.push_back(tab[i]);
-    //         new_pairs.push_back(tab[i+1]);
-    //     }
-    //     else
-    //     {
-    //         tab[i].losers.push_back(tab[i+1]); 
-    //         new_pairs.push_back(tab[i]);
-    //     }
-    // }
-    // tab = new_pairs;
+    //#F1
     tab = new_pairs(tab);
-    std::cout << "--- TREE OF LOSERS ---- " << std::endl;
-    tree_of_losers(tab);
+    std::cout << " --- 😛 RECURSIVE LVL : " << lvl << " ---" << std::endl << std::endl;
+    debug_ford(tab, pend);
+    lvl++;
+    Ford_johnson_algorithm(tab, jacob_tab);
+
+    // ZONE DE REDESCENTE
+
+
     return(tab);
 }
 
 int main(int argc, char **argv)
 {
     std::vector <t_element> tab_element;
+    std::vector <int> jacob_tab;
     std::string str_arg;
     for(int i = 1; i < argc; i++)
     { 
@@ -147,8 +195,9 @@ int main(int argc, char **argv)
     if(!is_valid_number(str_arg))
         return(std::cout << "Wrong args" << std::endl, 0);
     init_tab_element(str_arg, tab_element);
-    print_array(tab_element);
-    Ford_johnson_algorithm(tab_element);
+    // print_array(tab_element);
+    jacob_tab = generate_jacob_sequel(tab_element.size()/ 2 );
+    Ford_johnson_algorithm(tab_element, jacob_tab);
 }
 
 
@@ -172,4 +221,38 @@ int main(int argc, char **argv)
 //     }
 //     std::cout << std::endl;
 //     return(v_tab);
+// }
+
+
+// #F1
+    // on compare maintenant les pairs de deux et les gagnantes vont rester dans tab_element, les perdants iront dans les std::vector<t_element> losers;
+    // std::vector<t_element> new_pairs;
+    // for(int i = 0; i < tab.size(); i += 2)
+    // { 
+    //     if(tab[i].value < tab[i + 1].value)
+    //     { 
+    //         tab[i + 1].losers.push_back(tab[i]);
+    //         new_pairs.push_back(tab[i+1]);
+    //     }
+    //     else
+    //     {
+    //         tab[i].losers.push_back(tab[i+1]); 
+    //         new_pairs.push_back(tab[i]);
+    //     }
+    // }
+    // tab = new_pairs;
+
+//#F2
+    // void print_array(const std::vector<t_element>& tab)
+// { 
+//     std::vector<t_element>::const_iterator it;
+//     // std::vector<t_element>::const_iterator it_losers;
+//     it = tab.begin();
+//     std::cout << "---- Element tab----- " << std::endl;
+//     while(it != tab.end())
+//     {
+//         std::cout << "index : " << (*it).index;
+//         std::cout << " | value : " << (*it).value << std::endl;
+//         it++;
+//     }
 // }
