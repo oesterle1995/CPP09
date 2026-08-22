@@ -104,7 +104,6 @@ int find_winner_pos(std::vector<t_element>& new_tab, t_element& target)
             std::cout << "FIND : " << new_tab[i].value << std::endl; 
              return i;
         }
-            return i;
     }
     return(0);
 }
@@ -119,8 +118,15 @@ void jacob_stahll_insertion(std::vector<t_element>& tab, std::vector<t_element> 
     for(int i = 0; i < jacob_tab.size(); i++)
     { 
         jacob_index = jacob_tab[i] - 1; // ex : 3  devient index 2
+        if(jacob_index > tab.size() - 1) // si index > index_max du tab alors jacob_index devient index_max
+            jacob_index = tab.size() - 1;
         if(i != 0)
-            jacob_range = jacob_tab[i] - jacob_tab[i - 1]; 
+        {
+            if(jacob_tab[i] > tab.size())
+                jacob_range = tab.size() - jacob_tab[i - 1];
+            else
+                jacob_range = jacob_tab[i] - jacob_tab[i - 1];   // la range est jacob_index - (index - 1)
+        }
         for(int i = 0; jacob_range - i > 0; i++)
         { 
             real_index = find_winner_pos(new_tab, tab[jacob_index - i]); // recherche dans tab[2]
@@ -129,7 +135,7 @@ void jacob_stahll_insertion(std::vector<t_element>& tab, std::vector<t_element> 
             // methode dichotomique d'insertion;
         }
     }
-
+    tab = new_tab;
 }
 
 std::vector<int> generate_jacob_sequel(int half_list)
