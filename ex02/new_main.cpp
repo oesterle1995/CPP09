@@ -108,35 +108,95 @@ int find_winner_pos(std::vector<t_element>& new_tab, t_element& target)
     return(0);
 }
 
-void jacob_stahll_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend, const std::vector<int>& jacob_tab)
-{
-    int jacob_range = 0;
-    int jacob_index;
-    int real_index;
-    t_element elem_insert;
-    std::vector<t_element> new_tab = tab;
-    for(int i = 0; i < jacob_tab.size(); i++)
+// void jacob_stahll_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend, const std::vector<int>& jacob_tab)
+// {
+//     int jacob_range = 0;
+//     int jacob_index;
+//     int real_index;
+//     t_element elem_insert;
+//     std::vector<t_element> new_tab = tab;
+//     for(int i = 0; i < jacob_tab.size(); i++)
+//     { 
+//         jacob_index = jacob_tab[i] - 1; // ex : 3  devient index 2
+//         if(jacob_index > tab.size() - 1) // si index > index_max du tab alors jacob_index devient index_max
+//             jacob_index = tab.size() - 1;
+//         if(i != 0)
+//         {
+//             if(jacob_tab[i] > tab.size())
+//                 jacob_range = tab.size() - jacob_tab[i - 1];
+//             else
+//                 jacob_range = jacob_tab[i] - jacob_tab[i - 1];   // la range est jacob_index - (index - 1)
+//         }
+//         for(int i = 0; jacob_range - i > 0; i++)
+//         { 
+//             real_index = find_winner_pos(new_tab, tab[jacob_index - i]); // recherche dans tab[2]
+//             elem_insert = new_tab[real_index].losers.back(); // real_index devient la position avec les elements dans la liste;
+//             new_tab[real_index].losers.pop_back();
+//             // methode dichotomique d'insertion;
+//         }
+//     }
+//     tab = new_tab;
+// }
+
+
+void iterative_dichomotmie(std::vector<t_element>& tab, int nb)
+{ 
+    int low = 0;
+    int high = tab.size();
+    int range = high - low;
+    int mid;
+    while(range != 0)
     { 
-        jacob_index = jacob_tab[i] - 1; // ex : 3  devient index 2
-        if(jacob_index > tab.size() - 1) // si index > index_max du tab alors jacob_index devient index_max
-            jacob_index = tab.size() - 1;
-        if(i != 0)
-        {
-            if(jacob_tab[i] > tab.size())
-                jacob_range = tab.size() - jacob_tab[i - 1];
-            else
-                jacob_range = jacob_tab[i] - jacob_tab[i - 1];   // la range est jacob_index - (index - 1)
-        }
-        for(int i = 0; jacob_range - i > 0; i++)
+        mid = low + range/2;
+        if(nb > tab[mid])
+            low = mid + 1;
+        if(nb <= tab[mid])
+            high = mid;
+        range = high - low;        
+    }
+    tab.insert(tab.begin() + low, nb);
+}
+
+
+void jacob_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend, const std::vector<int>& jacob_tab)
+{ 
+    std::vector<t_element> small_elem;
+    std::vector<t_element> higher_elem = tab;
+    int range;
+    int real_index;
+
+    for(int i; i < higher_elem.size(); i++)
+    {
+        if(!higher_elem[i].losers.empty())
         { 
-            real_index = find_winner_pos(new_tab, tab[jacob_index - i]); // recherche dans tab[2]
-            elem_insert = new_tab[real_index].losers.back(); // real_index devient la position avec les elements dans la liste;
-            new_tab[real_index].losers.pop_back();
-            // methode dichotomique d'insertion;
+            small_elem.push_back(higher_elem[i].losers.back());
+            higher_elem[i].losers.pop_back();
         }
     }
-    tab = new_tab;
+    small_elem.push_back(pend.back());
+    pend.pop_back();
+
+    for(int i = 0; i < jacob_tab.size(); i++)
+    {
+        int index = jacob_tab[i] - 1;
+        if(i != 0)
+            range = jacob_tab[i] - jacob_tab[i - 1];
+        else
+            range = 1;
+        while(range > 0)
+        { 
+            for(int i = 0; i < higher_elem.size(); i++)
+            { 
+                if(higher_elem[i].index == tab[index].index)
+                    real_index = i;
+            }
+            
+            range--
+        }
+    }
+
 }
+
 
 std::vector<int> generate_jacob_sequel(int half_list)
 {
