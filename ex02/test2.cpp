@@ -5,28 +5,31 @@
 #include <vector>
 #include <climits>
 
-std::vector<int> order_insertion(std::vector<int> losers)
-{ 
+std::vector<int> order_insertion(std::vector<int> tab)
+{
     std::vector<int> order;
-    if(losers.size() < 1)
-        return(order);
-    int location_max = 2;
-    int compare = 1;
-    int i = 1;
-    int size = losers.size();
-    while(order.size() != losers.size())
-    { 
-        order.push_back(i);
-        location_max *= 2;
-        i = location_max - i;
-        
+    int power = 2;
+    int U_prev = 1;
+    int tmp;
+    int size = tab.size();
+
+    if (size < 1)
+        return (order);
+
+    order.push_back(0);
+    while (order.size() != tab.size())
+    {
+        power *= 2;
+        int U_curr = std::min(power - U_prev, size);
+        for (tmp = U_curr - 1; tmp > U_prev - 1; tmp--)
+            order.push_back(tmp);
+        U_prev = U_curr;
     }
-
-
+    return (order);
 }
 
 int main()
-{ 
+{
     std::vector<int> tab;
     tab.push_back(2);
     tab.push_back(4);
@@ -40,6 +43,21 @@ int main()
     tab.push_back(20);
     tab.push_back(22);
     tab.push_back(24);
-    std::vector<int> order = order_insertion();
-
+    std::vector<int> order = order_insertion(tab);
+    for (int i = 0; i < order.size(); i++)
+        std::cout << order[i] << std::endl;
 }
+
+// }
+
+// int main()
+// {
+//     // Tableau de 10 éléments
+//     std::vector<int> tab(10, 0);
+
+//     std::cout << "Lancement pour un tableau de taille 10..." << std::endl;
+//     std::vector<int> order = order_insertion(tab);
+
+//     std::cout << "Terminé ! Taille de order : " << order.size() << std::endl;
+//     return 0;
+// }

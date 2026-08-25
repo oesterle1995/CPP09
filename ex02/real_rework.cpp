@@ -3,8 +3,6 @@
 #include <vector>
 #include <climits>
 
-int lourd = 0 ;
-
 typedef struct s_element
 { 
     int value;
@@ -86,49 +84,48 @@ std::vector<t_element> new_pairs(std::vector<t_element>& tab)
         { 
             tab[i + 1].losers.push_back(tab[i]);
             new_pairs.push_back(tab[i+1]);
-            lourd++;
         }
         else
         {
             tab[i].losers.push_back(tab[i+1]); 
             new_pairs.push_back(tab[i]);
-            lourd++;
         }
     }
     return new_pairs;
 }
 
-void iterative_dichotomie(std::vector<t_element>& tab, t_element& elem, int low, int high)
-{ 
-    int range = high - low;
-    int mid;
-    while(range != 0)
-    { 
-        mid = low + range/2;
-        if(elem.value > tab[mid].value)
-            low = mid + 1;
-        if(elem.value <= tab[mid].value) // else pour enlever la comparaison mais garder pour la lisibilite
-            high = mid;
-        lourd++;
-        range = high - low;        
-    }
-    tab.insert(tab.begin() + low, elem);
-}
+// void iterative_dichomotmie(std::vector<t_element>& tab, int nb)
+// { 
+//     int low = 0;
+//     int high = tab.size();
+//     int range = high - low;
+//     int mid;
+//     while(range != 0)
+//     { 
+//         mid = low + range/2;
+//         if(nb > tab[mid])
+//             low = mid + 1;
+//         if(nb <= tab[mid])
+//             high = mid;
+//         range = high - low;        
+//     }
+//     tab.insert(tab.begin() + low, nb);
+// }
 
 int find_winner_pos(std::vector<t_element>& higher_elem, t_element& target)
 { 
     for(int i = 0; i < higher_elem.size(); i++)
-    {
+    { 
         if(higher_elem[i].index == target.index)
         { 
             std::cout << "FIND : " << higher_elem[i].value << std::endl; 
-            return i;
+             return i;
         }
     }
     return(0);
 }
 
-std::vector<int> order_insertion(std::vector<t_element>& tab)
+std::vector<int> order_insertion(std::vector<int> tab)
 {
     std::vector<int> order;
     int power = 2;
@@ -151,40 +148,26 @@ std::vector<int> order_insertion(std::vector<t_element>& tab)
     return (order);
 }
 
-void jacob_insertion(std::vector<t_element>&tab, std::vector<t_element>& smaller_elem,  std::vector<t_element>& higher_elem)
+void jacob_insertion(std::vector<t_element>&tab, std::vector<t_element> smaller_elem, \ 
+     std::vector<t_element> higher_elem, const std::vector<int>& jacob_tab)
 { 
     std::vector<int> order_b = order_insertion(smaller_elem);
-    int b_index;
-    int a_index;
-    for(int i = 0; i < order_b.size(); i++)
-    { 
-        b_index = order_b[i];
-        if(i == 0)
-            higher_elem.insert(higher_elem.begin(), smaller_elem[i]);
-        else if(b_index == tab.size())
-        { 
-            std::cout<< "impair" << std::endl;
-            iterative_dichotomie(higher_elem, smaller_elem[b_index], 0, higher_elem.size());
-        }
 
-        else
-        { 
-            a_index = find_winner_pos(higher_elem, tab[b_index]);
-            iterative_dichotomie(higher_elem, smaller_elem[b_index], 0, a_index);
-        }
-    }
-    tab = higher_elem;
+    for(int i = 0; i < jacob_tab.size(); i++)
+    {
+    } 
+
 }
 
 
-void prepare_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend)
+void prepare_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend, const std::vector<int>& jacob_tab)
 { 
     std::vector<t_element> small_elem;
     std::vector<t_element> higher_elem = tab;
     int range;
     int real_index;
 
-    for(int i = 0; i < higher_elem.size(); i++)
+    for(int i; i < higher_elem.size(); i++)
     {
         if(!higher_elem[i].losers.empty())
         { 
@@ -192,12 +175,9 @@ void prepare_insertion(std::vector<t_element>& tab, std::vector<t_element> &pend
             higher_elem[i].losers.pop_back();
         }
     }
-    if(!pend.empty())
-    { 
-        small_elem.push_back(pend.back());
-        pend.pop_back(); 
-    }
-    jacob_insertion(tab, small_elem, higher_elem);
+    small_elem.push_back(pend.back());
+    pend.pop_back();
+    jacob_insertion(tab, small_elem, higher_elem, jacob_tab);
 
 }
 
@@ -210,26 +190,23 @@ std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
     if(tab.size() <= 1)
     { 
         std::cout << "--- stop upping ---" << std::endl;
-        lvl--;
         return(tab);
     }
+    //si la liste est impair le dernier element est mis dans un pend;
     if(tab.size() % 2 != 0)
     {
         pend.push_back(tab[tab.size() - 1]);
         tab.pop_back();
     }
     tab = new_pairs(tab);
-    // std::cout << " --- 😛 RECURSIVE LVL UPPER: " << lvl << " ---" << std::endl << std::endl;
-    // debug_ford(tab, pend);
-    // lvl++;
+    std::cout << " --- 😛 RECURSIVE LVL : " << lvl << " ---" << std::endl << std::endl;
+    debug_ford(tab, pend);
+    lvl++;
     Ford_johnson_algorithm(tab);
 
     // ZONE DE REDESCENTE
-    prepare_insertion(tab, pend);
 
-    // std::cout << " --- 😛 RECURSIVE LVL DOWN: " << lvl << " ---" << std::endl << std::endl;
-    // debug_ford(tab, pend);
-    // lvl--;
+
     return(tab);
 }
 
@@ -246,11 +223,4 @@ int main(int argc, char **argv)
         return(std::cout << "Wrong args" << std::endl, 0);
     init_tab_element(str_arg, tab_element);
     Ford_johnson_algorithm(tab_element);
-    for(int i = 0; i < tab_element.size(); i++)
-    { 
-        std::cout << "chaine final" << std::endl;
-        std::cout << tab_element[i].value << std::endl;
-    }
-    std::cout << "nombre d'element : " << tab_element.size() << std::endl;
-    std::cout << "number of compare :" << lourd << std::endl;
 }
