@@ -219,17 +219,17 @@ std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
         tab.pop_back();
     }
     tab = new_pairs(tab);
-    // std::cout << " --- 😛 RECURSIVE LVL UPPER: " << lvl << " ---" << std::endl << std::endl;
-    // debug_ford(tab, pend);
-    // lvl++;
+    std::cout << " --- 😛 RECURSIVE LVL UPPER: " << lvl << " ---" << std::endl << std::endl;
+    debug_ford(tab, pend);
+    lvl++;
     Ford_johnson_algorithm(tab);
 
     // ZONE DE REDESCENTE
     prepare_insertion(tab, pend);
 
-    // std::cout << " --- 😛 RECURSIVE LVL DOWN: " << lvl << " ---" << std::endl << std::endl;
-    // debug_ford(tab, pend);
-    // lvl--;
+    std::cout << " --- 😛 RECURSIVE LVL DOWN: " << lvl << " ---" << std::endl << std::endl;
+    debug_ford(tab, pend);
+    lvl--;
     return(tab);
 }
 
