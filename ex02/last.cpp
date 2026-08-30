@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 18:21:04 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/08/28 20:41:31 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/08/30 19:13:51 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,16 +146,23 @@ void Ford_johnson(std::vector<int>& tab, int bloc_size = 1)
 
     std::vector<int> main_chain;
     std::vector<int> pending;
-    for(int i; i < tab.size()/group; i++)
+    void ford(std::vector<int>& tab, int bloc_size)
+{ 
+    int group = 2 * bloc_size;
+    int nb_pairs = tab.size()/bloc_size;
+    bool odd = tab.size()/bloc_size % 2 == 1;
+    std::vector<int> main_chain;
+    std::vector<int> pending;
+    for(int i = 0; i  < tab.size()/bloc_size; i++)
     { 
-        int first = group * i;
-        int second = group * i + bloc_size;
-        for(int i = 0; i < bloc_size; i++)
-        { 
-            main_chain.push_back(tab[first]);
-            pending.push_back(tab[second]);
-        }
+        if(i % 2 == 0)
+            fill_bloc_size(tab, pending, bloc_size, i);
+        if(i % 2 == 1)
+            fill_bloc_size(tab, main_chain, bloc_size, i);
     }
+    print_array(main_chain, "--- main --- ");
+    print_array(pending, "--- pending --- ");
+} 
     
 }
 

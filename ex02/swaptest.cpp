@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 19:30:58 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/08/28 21:07:06 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/08/30 17:45:21 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,69 +31,53 @@ void print_array(std::vector<int>& tab, std::string title)
 
 
 
-void ford(std::vector<int>& tab, int bloc_size)
+// void ford(std::vector<int>& tab, int bloc_size)
+// { 
+//     int group = 2 * bloc_size;
+//     int nb_pairs = tab.size()/group;
+//     bool odd = tab.size()/bloc_size % 2 == 1;
+//     std::vector<int> main_chain;
+//     std::vector<int> pending;
+//     for(int i = 0; i < nb_pairs; i++)
+//     { 
+//         int first = group * i;
+//         int second = group * i + bloc_size;
+//         for(int j = 0; j < bloc_size; j++)
+//         { 
+//             main_chain.push_back(tab[first + j]);
+//             pending.push_back(tab[second  + j]);
+//         }
+//     }
+//     if(odd == true)
+//     {   
+//         int last = (tab.size()/group) * group;
+//         for(int j = 0; j < bloc_size; j++)
+//             pending.push_back(tab[last + j]);
+//     }
+//     print_array(main_chain, "--- main --- ");
+//     print_array(pending, "--- pending --- ");
+// } 
+
+
+void fill_bloc_size(std::vector<int>& src, std::vector<int> &dest, int bloc_size, int i)
 { 
-    int group = 2 * bloc_size;
-    int nb_pairs = tab.size()/group;
-    bool odd = tab.size()/bloc_size % 2 == 1;
-    std::vector<int> main_chain;
-    std::vector<int> pending;
-    for(int i = 0; i < nb_pairs; i++)
-    { 
-        int first = group * i;
-        int second = group * i + bloc_size;
-        for(int j = 0; j < bloc_size; j++)
-        { 
-            main_chain.push_back(tab[first + j]);
-            pending.push_back(tab[second  + j]);
-        }
-    }
-    if(odd == true)
-    {   
-        int last = (tab.size()/group) * group;
-        for(int j = 0; j < bloc_size; j++)
-            pending.push_back(tab[last + j]);
-    }
-    print_array(main_chain, "--- main --- ");
-    print_array(pending, "--- pending --- ");
-} 
+    for(int j = 0; j < bloc_size; j++)
+        dest.push_back(src[i *bloc_size + j]);    
+}
 
 void ford(std::vector<int>& tab, int bloc_size)
 { 
     int group = 2 * bloc_size;
-    int nb_pairs = tab.size()/group;
+    int nb_pairs = tab.size()/bloc_size;
     bool odd = tab.size()/bloc_size % 2 == 1;
     std::vector<int> main_chain;
     std::vector<int> pending;
-    for(int i = 0; i < nb_pairs; i++)
+    for(int i = 0; i  < tab.size()/bloc_size; i++)
     { 
         if(i % 2 == 0)
-        { 
-            
-
-            
-        }
+            fill_bloc_size(tab, pending, bloc_size, i);
         if(i % 2 == 1)
-        { 
-
-
-
-
-            
-        }
-        int first = group * i;
-        int second = group * i + bloc_size;
-        for(int j = 0; j < bloc_size; j++)
-        { 
-            main_chain.push_back(tab[first + j]);
-            pending.push_back(tab[second  + j]);
-        }
-    }
-    if(odd == true)
-    {   
-        int last = (tab.size()/group) * group;
-        for(int j = 0; j < bloc_size; j++)
-            pending.push_back(tab[last + j]);
+            fill_bloc_size(tab, main_chain, bloc_size, i);
     }
     print_array(main_chain, "--- main --- ");
     print_array(pending, "--- pending --- ");
