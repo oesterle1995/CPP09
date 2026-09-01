@@ -14,7 +14,7 @@ GREEN="\033[32m"
 RED="\033[31m"
 RESET="\033[0m"
 
-echo -e "=== Début de la suite de tests (10 000 tests par catégorie) ===\n"
+echo -e "=== Début de la suite de tests (100 tests par catégorie) ===\n"
 
 # --- PARTIE 1 : TESTS DE TRI DE TABLEAUX ---
 for size in "${TEST_SIZES[@]}"; do
