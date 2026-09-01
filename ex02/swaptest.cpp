@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/28 19:30:58 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/08/31 18:12:58 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/01 00:44:09 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,36 +90,36 @@ std::vector<int> generate_jacob_tab(int size)
     return(order);
 }
 
-int binairy_search(std::vector<int>& main_chain, int low, int high, int nb)
+int binairy_search_bloc(std::vector<int>& main_chain, int low, int high, int block_size, int nb)
 {
-    // std::cout << "low :" << low << std::endl;
-    //  std::cout << "high :" << high << std::endl;
+    // std::cout << "low_bloc :" << low_bloc << std::endl;
+    //  std::cout << "high_bloc :" << high_bloc << std::endl;   
     int ret;
     if(low == high)
-        return(low);
+        return(low); 
     int mid = low + (high - low)/2;
-    if(nb > main_chain[mid])
-        ret = binairy_search(main_chain, mid + 1, high, nb);
+    int mid_bloc = mid * block_size;
+    if(nb > main_chain[mid_bloc])
+        ret = binairy_search_bloc(main_chain, mid + 1, high, nb);
     else
-        ret = binairy_search(main_chain, low, mid, nb);
+        ret = binairy_search_bloc(main_chain, low, mid, nb);
     return(ret);
 }
 
 void jacob_insertion(std::vector<int>& main_chain, std::vector<int>& pending, int bloc_size)
 {
-    int high;
-    int index;
     std::vector<int> order = generate_jacob_tab(pending.size());
     if(order.empty())
         return;
     for(int j = 0; j < bloc_size; j++)
-            main_chain.insert(main_chain.begin() + j, pending[order[0]]);
+            main_chain.insert(main_chain.begin() + j, pending[order[0] + j]);
     for(int i = 1; i < pending.size(); i++)
     { 
-        high = order[i] + i; 
-        index = binairy_search(main_chain, 0, high, pending[order[i]]);
+        int high = order[i] + i;
+        int pending_target = order[i] * bloc_size;
+        int bloc_index = binairy_search_bloc(main_chain, 0, high, pending[pending_target]) * bloc_size;
         for(int j = 0; j < bloc_size; j++)
-            main_chain.insert(main_chain.begin() + index + j, pending[order[i]]);
+            main_chain.insert(main_chain.begin() + bloc_index + j, pending[pending_target + j]);
     }
 }
 
@@ -135,9 +135,9 @@ void ford(std::vector<int>& tab, int bloc_size)
     for(int i = 0; i  < tab.size()/bloc_size; i++)
     { 
         if(i % 2 == 0)
-            fill_bloc_size(tab, pending, bloc_size, i);
-        if(i % 2 == 1)
             fill_bloc_size(tab, main_chain, bloc_size, i);
+        if(i % 2 == 1)
+            fill_bloc_size(tab, pending, bloc_size, i);
     }
     jac = generate_jacob_tab(pending.size());
     print_array(main_chain, "--- main --- ");
@@ -151,21 +151,34 @@ void ford(std::vector<int>& tab, int bloc_size)
 int main()
 { 
     std::vector<int> tab;
+    tab.push_back(12);
     tab.push_back(2);
-    tab.push_back(4);
-
-    tab.push_back(6);
-    tab.push_back(8);
 
     tab.push_back(10);
-    tab.push_back(12);
+    tab.push_back(6);
     
-    tab.push_back(14);
-    tab.push_back(16);
+    tab.push_back(27);
+    tab.push_back(8);
+
+
+
+    
+
+    tab.push_back(47);
+    tab.push_back(1);
+
+
+    
+    
+    tab.push_back(68);
+    tab.push_back(11);
+
+
+    
 
     tab.push_back(18);
     tab.push_back(20);
     
     tab.push_back(22);
-    ford(tab, 1);
+    ford(tab, );
 }
