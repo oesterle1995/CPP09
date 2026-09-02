@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 17:47:00 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/01 18:08:08 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/02 15:06:11 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void  checker(std::vector<int> &tab, int size)
     for(int i = 0; i < tab.size() - 1; i++)
     { 
         int j = i + 1;
-        if(tab[i].value > tab[j].value)
+        if(tab[i] > tab[j])
             std::cout << RED << "[FAIL sort] " << RESET;
     }
     std::cout << GREEN << "[OK]" << RESET <<  std::endl; 
@@ -141,21 +141,21 @@ void dichotomic_insertion(std::vector<int>& tab, std::vector<int> &main_idx, int
 }
 
 
-void jacob_insertion(std::vector<int>& tab, std::vector<int>& main_idx, std::vector<int>& small_idx)
+void jacob_insertion(std::vector<int>& tab, std::vector<int>& main_idx, std::vector<int>& pending_idx)
 {
-    std::vector<int> jacob_order = generate_jacob_tab(small_idx.size());
-    main_idx.insert(main_idx.begin(), small_idx[0]);
+    std::vector<int> jacob_order = generate_jacob_tab(pending_idx.size());
+    main_idx.insert(main_idx.begin(), pending_idx[0]);
     for(int i = 1; i < jacob_order.size(); i++)
     { 
         int b = jacob_order[i]; // 0 2 1 4 3 
         int high = b + i;
-        int j = small_idx[b];
-        dichotomic_insertion(tab, main_idx, j, 0, high);
+        int idx = pending_idx[b];
+        dichotomic_insertion(tab, main_idx, idx, 0, high);
     }
 }
 
 
-void switch_index(std::vector<int>& tab, std::vector<int>& idx, int nb_pairs)
+void switch_index(std::vector<int>& tab, std::vector<int>& order, int nb_pairs)
 { 
     
     for(int i = 0; i < nb_pairs; i++)
@@ -163,71 +163,80 @@ void switch_index(std::vector<int>& tab, std::vector<int>& idx, int nb_pairs)
         int first = 2 * i;
         int second = 2 * i + 1;
         if(tab[first] < tab[second])
-            swap_int(idx[first], idx[second]);
+            swap_int(order[first], order[second]);
     }
 }
 
-void Ford_johnson(std::vector<int>& tab, std::vector<int>& idx)
+void Ford_johnson(std::vector<int>& tab, std::vector<int>& order)
 {
     int nb_pairs = tab.size()/2;
     if(tab.size() == 1)
         return;
-    switch_index(tab, idx, nb_pairs);
+    switch_index(tab, order, nb_pairs);
 
-    std::vector<int> new_idx;
+    //tableau new_order initialiser a 0 1 2... C'est les indices des gagnants(1 new_order = 2 * 1 order =>gagnants) 
+    std::vector<int> new_order;
     for(int i = 0; i < nb_pairs; i++)
-        new_idx.push_back(i);
+        new_order.push_back(i);
+
+    //Nouveau tableau ne contenant que les gagnants. il sera envoye a ford_jhonson
     std::vector<int> new_value;
     for(int i = 0; i < nb_pairs; i++)
-    { 
-        int first = 2 * i;
-        new_value.push_back(tab[idx[first]]);
-    }
-    Ford_johnson(new_value, new_idx);
+        new_value.push_back(tab[order[2 * i]]);
+
+    Ford_johnson(new_value, new_order);
     
-    //on suppose  ici que new_index possede les index dans l'ordre de mes vainqueurs // idx 0 1 2 3 4  devient 2 4 1 3 0 
+
+    // A partir d'ici new_order contient les index des gagnants dans un ordre trie : on se base dessus
+    // pour creer main_idx et pending_idx
+    
+    // main_idx va contenir les index des gagnants
     std::vector<int> main_idx;
-    std::vector<int> small_idx;
-    for(int i = 0; i < new_idx.size(); i++)
-        main_idx.push_back(idx[2 * new_idx[i]]);
-    print_array(main_idx, "--- main index ---");
-    for(int i = 0; i < new_idx.size(); i++)
-        small_idx.push_back(idx[2 * new_idx[i] + 1]);
-    print_array(small_idx, "--- small index ---");
-    if(idx.size() % 2 != 0)
-        small_idx.push_back(idx[idx.size() - 1]);
-    jacob_insertion(tab, main_idx, small_idx);
-    print_array(main_idx, "--- main index sort ---");
-    idx = main_idx;
+    for(int i = 0; i < new_order.size(); i++)
+        main_idx.push_back(order[2 * new_order[i]]);
+    
+    // pending_index va contenir les index des perdants
+    std::vector<int> pending_idx;
+    for(int i = 0; i < new_order.size(); i++)
+        pending_idx.push_back(order[2 * new_order[i] + 1]);
+    
+    // on rajoute a pending_index le nombre impair
+    if(order.size() % 2 != 0)
+        pending_idx.push_back(order[order.size() - 1]);
+    
+    //va inserer les pending index dans le main_index puis on dit que order_index = main comme ca en descendant
+    //dans le niveau de recursion on a le bon ordre. 
+    jacob_insertion(tab, main_idx, pending_idx);
+    order = main_idx;
 }
 
 
 
 
 
-std::vector<int> sort_tab(std::vector<int>& tab, std::vector<int>& idx)
+std::vector<int> sort_tab(std::vector<int>& tab, std::vector<int>& order)
 { 
     std::vector<int> new_tab;
-    for(int i = 0; i < idx.size(); i++)
-        new_tab.push_back(tab[idx[i]]);
+    for(int i = 0; i < order.size(); i++)
+        new_tab.push_back(tab[order[i]]);
     return(new_tab);
 }
 
 int main(int argc, char **argv)
 { 
     std::vector<int> tab;
-    std::vector<int> idx;
+    std::vector<int> order;
     int size;
     
     if(argc < 2)
-        return(0);
-    if(init_tab(tab, argc, argv) == false);
-        std::cout << "Error" << std::endl;
+        return(std::cout << "Error" << std::endl, 0);
+    if(init_tab(tab, argc, argv) == false)
+        return(std::cout << "Error" << std::endl, 0);
     size = tab.size();
     for(int i = 0; i < tab.size(); i++)
-        idx.push_back(i);
-    Ford_johnson(tab, idx);
-    tab = sort_tab(tab, idx);
+        order.push_back(i);
+    Ford_johnson(tab, order);
+    tab = sort_tab(tab, order);
     checker(tab, size);
     // print_array(tab, "--- final chain ---");
 }

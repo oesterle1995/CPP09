@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   list_over_max.cpp                                  :+:      :+:    :+:   */
+/*   ford_v1_struct.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/01 18:11:03 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/01 19:48:59 by aoesterl         ###   ########.fr       */
+/*   Created: 2026/09/01 12:39:57 by aoesterl          #+#    #+#             */
+/*   Updated: 2026/09/02 15:50:22 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,16 +25,18 @@ typedef struct s_element
 }t_element;
 
 //#1 PARSING
-bool fill_number(const std::string &str, std::vector<int>& tab)
+bool fill_number(const std::string &str, std::vector<t_element>& tab)
 { 
     int nb;
     int count = 0;
+    t_element node;
     std::istringstream iss(str);
     while(iss >> nb)
     { 
         if(nb < 0)      
             return false;
-        tab.push_back(nb);
+        node.value = nb;
+        tab.push_back(node);
         count++;
     }
     if(!iss.eof() || count == 0)
@@ -42,7 +44,7 @@ bool fill_number(const std::string &str, std::vector<int>& tab)
     return true;
 }
 
-bool init_tab(std::vector<int>& tab, int argc, char **argv)
+bool init_tab(std::vector<t_element>& tab, int argc, char **argv)
 { 
     std::string str;
     for(int i = 1; i < argc; i++)
@@ -53,6 +55,40 @@ bool init_tab(std::vector<int>& tab, int argc, char **argv)
     if(fill_number(str, tab) == false)
         return false;
     return true;
+}
+//#1 FIN PARSING
+
+// #2 DEBUG
+void tree_of_element(const std::vector<t_element>& tab, std::string prefix = "")
+{
+    std::string new_prefix;
+    int end = tab.size() - 1;
+    if(tab.empty())
+        return;
+    for(int i = 0; i < tab.size(); i++)
+    {
+        std::cout << prefix;
+        if(i != end)
+            std::cout << "├── ";
+        else
+            std::cout << "└── ";
+        std::cout << "[Val: " << tab[i].value << "]" << std::endl;
+        if(i != end)
+            new_prefix = prefix + "│\t";
+        else
+            new_prefix = prefix + "\t";
+        tree_of_element(tab[i].losers, new_prefix);
+    }
+}
+
+void debug_ford(const std::vector<t_element>& tab, const std::vector<t_element>& pend, std::string& title)
+{
+    std::cout << title << std::endl << std::endl;
+    std::cout << "   --- TREE OF LOSERS ---- " << std::endl;
+    tree_of_element(tab);
+    std::cout << std::endl << "   --- PEND --- " << std::endl;
+    tree_of_element(pend);
+    std::cout << std::endl;
 }
 
 void print_array(std::vector<int>& tab, std::string title)
@@ -68,7 +104,7 @@ void print_array(std::vector<int>& tab, std::string title)
 //FIN DEBUG
 
 // #3 Checker
-void  checker(std::vector<int> &tab, int size)
+void  checker(std::vector<t_element> &tab, int size)
 { 
     const std::string GREEN = "\033[32m";
     const std::string RED   = "\033[31m";
@@ -80,7 +116,7 @@ void  checker(std::vector<int> &tab, int size)
     for(int i = 0; i < tab.size() - 1; i++)
     { 
         int j = i + 1;
-        if(tab[i] > tab[j])
+        if(tab[i].value > tab[j].value)
             std::cout << RED << "[FAIL sort] " << RESET;
     }
     std::cout << GREEN << "[OK]" << RESET <<  std::endl; 
@@ -94,21 +130,21 @@ void  checker(std::vector<int> &tab, int size)
 //FIN CHECKER
 
 
-void iterative_dichotomie(std::vector<int>& tab, int& nb, int low, int high)
+void iterative_dichotomie(std::vector<t_element>& tab, t_element& elem, int low, int high)
 { 
     int range = high - low;
     int mid;
     while(range != 0)
     { 
         mid = low + range/2;
-        if(nb > tab[mid])
+        if(elem.value > tab[mid].value)
             low = mid + 1;
         else
             high = mid;
         lourd++;
         range = high - low;        
     }
-    tab.insert(tab.begin() + low, nb);
+    tab.insert(tab.begin() + low, elem);
 }
 
 std::vector<int> generate_jacob_tab(int size)
@@ -135,7 +171,7 @@ std::vector<int> generate_jacob_tab(int size)
     return(order);
 }
 
-void jacob_insertion(std::vector<int>& main_chain,  std::vector<int>& pending)
+void jacob_insertion(std::vector<t_element>& pending,  std::vector<t_element>& main_chain)
 { 
     std::vector<int> order_b = generate_jacob_tab(pending.size()); // 1 3 2 5 4  => 0 2 1 4 3
     int high;
@@ -148,59 +184,70 @@ void jacob_insertion(std::vector<int>& main_chain,  std::vector<int>& pending)
     }
 }
 
-void compare_pairs(std::vector<int>& tab, std::vector<int>& main_chain, std::vector<int>& pending)
-{
-    for(int i = 0; i < tab.size(); i += 2)
-    { 
-        if(tab[i] < tab[i + 1])
-        { 
-            main_chain.push_back(tab[i + 1]);
-            pending.push_back(tab[i]);
-        }
-        else
-        {
-            main_chain.push_back(tab[i]);
-            pending.push_back(tab[i + 1]);
-        }
-        lourd++;
+
+void insertion(std::vector<t_element>& tab, std::vector<t_element> &odd)
+{ 
+    std::vector<t_element> pending;
+    std::vector<t_element> main_chain;
+
+    main_chain = tab;
+    for(int i = 0; i < main_chain.size(); i++)
+    {
+        // if(main_chain[i].losers.empty() == false)
+        // { 
+            pending.push_back(main_chain[i].losers.back());
+            main_chain[i].losers.pop_back();
+        // }
     }
+    if(odd.empty() == false)
+        pending.push_back(odd.back());
+    jacob_insertion(pending, main_chain);
+    tab.swap(main_chain);
 }
 
 
-std::vector<int> Ford_johnson_algorithm(std::vector<int>& tab, std::vector<int>& order)
+void new_tab(std::vector<t_element>& tab)
+{ 
+    std::vector<t_element> new_tab;
+    for(int i = 0; i < tab.size(); i += 2)
+    { 
+        if(tab[i].value < tab[i + 1].value)
+        { 
+            tab[i + 1].losers.push_back(tab[i]);
+            new_tab.push_back(tab[i+1]);
+        }
+        else
+        {
+            tab[i].losers.push_back(tab[i+1]);
+            new_tab.push_back(tab[i]);
+        }
+        lourd++;
+    }
+    tab.swap(new_tab);
+}
+
+
+std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
 {
-    int odd;
-    bool odd_here = false; 
+    std::vector<t_element> odd;
     if(tab.size() <= 1)
         return(tab);
     if(tab.size() % 2 != 0)
     {
-        odd_here = true;
-        odd = tab[tab.size() - 1];
+        odd.push_back(tab[tab.size() - 1]);
         tab.pop_back();
     }
-    std::vector<int> main_chain;
-    std::vector<int> pending;
-    compare_pairs(tab, main_chain, pending);
-    std::vector<int> pending_order;
-    for(int i = 0; i < main_chain.size(); i++)
-        pending_order.push_back(i);
-    if(odd_here == true)
-        pending.push_back(odd);
-    // ici debug
-    Ford_johnson_algorithm(main_chain, pending_order);
-    std::vector<int> sorted_pending(pending.size());
-    for(int i = 0; i < pending_order.size(); i++)
-        sorted_pending[i] = pending[pending_order[i]];
-    jacob_insertion(main_chain, sorted_pending);
-    
-    // ici debug
-    return(main_chain);
+    new_tab(tab);
+    // debug_ford(tab, odd, "--- 😛 RECURSIVE UP --- ");
+    Ford_johnson_algorithm(tab);
+    insertion(tab, odd);
+    // debug_ford(tab, odd, " --- 😛 RECURSIVE DOWN --- ");
+    return(tab);
 }
 
 int main(int argc, char **argv)
 {
-    std::vector <int> tab;
+    std::vector <t_element> tab;
     int size;
     if(init_tab(tab, argc, argv) == false)
         return(std::cout << "Error" << std::endl, 0);
@@ -208,3 +255,4 @@ int main(int argc, char **argv)
     Ford_johnson_algorithm(tab);
     checker(tab, size);
 }
+
