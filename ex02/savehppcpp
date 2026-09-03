@@ -196,39 +196,43 @@ void Pmerge::iterative_dichotomie(std::vector<t_element>& tab, t_element& elem, 
     tab.insert(tab.begin() + low, elem);
 }
 
-std::vector<size_t> Pmerge::generate_jacob_tab(size_t size)
+void Pmerge::generate_jacob_tab( std::vector<t_element> &order, size_t size)
 {
-    std::vector<size_t> order;
     size_t J_next;
     size_t J_prev = 1;
     size_t J_curr = 3;
     
+    t_element elem;
     if(size < 1)
-        return(order);
-    order.push_back(1);
+        return;
+    elem.value = 1;
+    order.push_back(elem);
     while(order.size() != size)
     { 
         size_t j = std::min(J_curr, size);
         for(size_t tmp = j; tmp > J_prev; tmp--)
-            order.push_back(tmp);
+        { 
+            elem.value = static_cast<int>(tmp);
+            order.push_back(elem);
+        }
         J_next = J_curr + 2 *J_prev;
         J_prev = J_curr;
         J_curr = J_next;
     }
     for(size_t i = 0; i < order.size(); i++)
-        order[i] -= 1;
-    return(order);
+        order[i].value -= 1;
 }
 
 void Pmerge::jacob_insertion(std::vector<t_element>& pending,  std::vector<t_element>& main_chain)
 { 
-    std::vector<size_t> order_b = generate_jacob_tab(pending.size()); // 1 3 2 5 4  => 0 2 1 4 3
+    std::vector<t_element> order;
+    generate_jacob_tab(order, pending.size()); // 1 3 2 5 4  => 0 2 1 4 3
     size_t high;
     main_chain.insert(main_chain.begin(), pending[0]); 
-    for(size_t i = 1; i < order_b.size(); i++)
+    for(size_t i = 1; i < order.size(); i++)
     {
-        high = order_b[i] + i;
-        iterative_dichotomie(main_chain, pending[order_b[i]], 0, high);
+        high = order[i].value + i;
+        iterative_dichotomie(main_chain, pending[order[i]], 0, high);
     }
 }
 

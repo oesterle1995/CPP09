@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/02 19:17:47 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/03 16:46:36 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/03 17:30:33 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ void print_time_process(Pmerge &sort, double start, double end)
     
 }
 
-
-
 int main(int argc, char ** argv)
 {
     Pmerge sort;
@@ -47,9 +45,6 @@ int main(int argc, char ** argv)
     end = get_time();
     print_time_process(sort, start, end); 
 
-    // std::cout << "count : " << sort.get_count() << std::endl;
-    // sort.checker(sort.get_vector(), sort.get_size());
-
     std::cout << std::endl;
     
     //deque
@@ -60,9 +55,40 @@ int main(int argc, char ** argv)
     sort.ford_johnson_algorithm(sort.get_deque());
     sort.get_array(sort.get_deque(), "After: ");
     end = get_time();
-    print_time_process(sort, start, end); 
+    print_time_process(sort, start, end);
 
-    // std::cout << "count : " << sort.get_count() << std::endl;
-    // sort.checker(sort.get_deque(), sort.get_size());
+    // Pmerge sort2(sort);
+    // std::cout << "Sort2 copy constructor" << std::endl;
+    // sort2.get_array(sort.get_vector(), "After: ");
+    // sort2.get_array(sort.get_deque(), "After: ");
+
+    // std::cout << "Sort3 operator cpy" << std::endl;
+    // Pmerge sort3;
+    // sort3 = sort;
+    // sort3.get_array(sort.get_vector(), "After: ");
+    // sort3.get_array(sort.get_deque(), "After: ");
     
 }
+
+
+
+// int main(int argc, char **argv)
+// { 
+//         Pmerge sort;
+
+//     //vector
+//     // if(sort.init_tab(sort.get_vector(), argc, argv) == false)
+//     //     return(std::cout << "Error" << std::endl, 0);
+//     // sort.ford_johnson_algorithm(sort.get_vector());
+//     // sort.checker(sort.get_vector(), sort.get_size());
+    
+//     //deque
+//     // if(sort.init_tab(sort.get_deque(), argc, argv) == false)
+//     //     return(std::cout << "Error" << std::endl, 0);
+//     // sort.ford_johnson_algorithm(sort.get_deque());
+//     // sort.checker(sort.get_deque(), sort.get_size());
+    
+
+
+    
+// }
