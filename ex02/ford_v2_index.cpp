@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   index_over.cpp                                     :+:      :+:    :+:   */
+/*   ford_v2_index.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 17:47:00 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/02 15:06:11 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/21 13:19:45 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <climits>
 #include <iomanip>
 #include <algorithm>
-
+#include <sys/time.h>
 
 
 //#1 PARSING
@@ -222,12 +222,32 @@ std::vector<int> sort_tab(std::vector<int>& tab, std::vector<int>& order)
     return(new_tab);
 }
 
+double get_time()
+{ 
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return(time.tv_sec * 1000000.0 + time.tv_usec);
+}
+
+void print_time_process(std::vector<int> &sort, double start, double end)
+{ 
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << "Time to process a range of " << sort.size() << \
+    " elements with std::vector<> : " << \
+    end - start << " us" << std::endl;
+    
+}
+
 int main(int argc, char **argv)
 { 
     std::vector<int> tab;
     std::vector<int> order;
     int size;
+
+    double start;
+    double end;
     
+    start = get_time();
     if(argc < 2)
         return(std::cout << "Error" << std::endl, 0);
     if(init_tab(tab, argc, argv) == false)
@@ -237,6 +257,8 @@ int main(int argc, char **argv)
         order.push_back(i);
     Ford_johnson(tab, order);
     tab = sort_tab(tab, order);
-    checker(tab, size);
+    end = get_time();
+    print_time_process(tab, start, end); 
+    // checker(tab, size);
     // print_array(tab, "--- final chain ---");
 }

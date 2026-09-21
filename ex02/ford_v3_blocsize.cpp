@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   last.cpp                                           :+:      :+:    :+:   */
+/*   ford_v3_blocsize.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 18:21:04 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/01 02:48:14 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/21 13:17:19 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <climits>
 #include <iomanip>
 #include <algorithm>
+#include <sys/time.h>
 
 //#1 PARSING
 bool is_valid_number(const std::string &str, std::vector<int>& tab)
@@ -219,10 +220,30 @@ void checker_count(std::vector<int>& tab, int size)
     }
 }
 
+double get_time()
+{ 
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return(time.tv_sec * 1000000.0 + time.tv_usec);
+}
+
+void print_time_process(std::vector<int> &sort, double start, double end)
+{ 
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << "Time to process a range of " << sort.size() << \
+    " elements with std::vector<> : " << \
+    end - start << " us" << std::endl;
+    
+}
+
 int main(int argc, char **argv)
 { 
     std::vector<int> tab;
     int size; 
+    double start;
+    double end;
+    
+    start = get_time();
     if(argc < 2)
         return(std::cout << "Error" << std::endl, 0);
     if(recup_argc(tab, argc, argv) == false)
@@ -234,75 +255,10 @@ int main(int argc, char **argv)
         checker_count(tab,size);
         return(0);
     }
+    
     Ford_johnson(tab);
-    checker_tab(tab);
-    checker_count(tab, size);
+    end = get_time();
+    print_time_process(tab, start, end); 
+    // checker_tab(tab);
+    // checker_count(tab, size);
 }
-
-
-// int main(int argc, char **argv) {
-//     // Optimisation des entrées/sorties pour supporter 1 000 000 d'éléments sans ralentissement
-//     std::ios_base::sync_with_stdio(false);
-//     std::cin.tie(NULL);
-
-//     std::vector<int> numbers;
-
-//     if (argc > 1) {
-//         // MODE 1 : Lecture classique via argv
-//         for (int i = 1; i < argc; ++i) {
-//             try {
-//                 size_t pos;
-//                 int val = std::stoi(argv[i], &pos);
-//                 if (argv[i][pos] != '\0' || val < 0) {
-//                     std::cout << "Error" << std::endl;
-//                     return 1;
-//                 }
-//                 numbers.push_back(val);
-//             } catch (...) {
-//                 std::cout << "Error" << std::endl;
-//                 return 1;
-//             }
-//         }
-//     } else {
-//         // MODE 2 : Lecture via std::cin (pour les très grands ensembles)
-//         std::string input;
-//         while (std::cin >> input) {
-//             try {
-//                 size_t pos;
-//                 int val = std::stoi(input, &pos);
-//                 if (input[pos] != '\0' || val < 0) {
-//                     std::cout << "Error" << std::endl;
-//                     return 1;
-//                 }
-//                 numbers.push_back(val);
-//             } catch (...) {
-//                 std::cout << "Error" << std::endl;
-//                 return 1;
-//             }
-//         }
-//     }
-
-//     // Gestion du cas vide
-//     if (numbers.empty()) {
-//         std::cout << "Error" << std::endl;
-//         return 1;
-//     }
-
-//     int initial_size = numbers.size();
-
-//     // Cas d'un seul élément
-//     if (numbers.size() == 1) {
-//         checker_tab(numbers);
-//         checker_count(numbers, initial_size);
-//         return 0;
-//     }
-
-//     // Exécution du tri Ford-Johnson
-//     Ford_johnson(numbers);
-
-//     // Vérification du tri et de la taille pour tes scripts Shell
-//     checker_tab(numbers);
-//     checker_count(numbers, initial_size);
-
-//     return 0;
-// }

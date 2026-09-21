@@ -6,7 +6,7 @@
 /*   By: aoesterl <aoesterl@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/01 12:39:57 by aoesterl          #+#    #+#             */
-/*   Updated: 2026/09/02 15:50:22 by aoesterl         ###   ########.fr       */
+/*   Updated: 2026/09/21 13:22:59 by aoesterl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <vector>
 #include <climits>
 #include <iomanip>
+#include <sys/time.h>
 
 int lourd = 0 ;
 
@@ -245,14 +246,36 @@ std::vector<t_element> Ford_johnson_algorithm(std::vector<t_element>& tab)
     return(tab);
 }
 
+double get_time()
+{ 
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return(time.tv_sec * 1000000.0 + time.tv_usec);
+}
+
+void print_time_process(std::vector<t_element> &sort, double start, double end)
+{ 
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << "Time to process a range of " << sort.size() << \
+    " elements with std::vector<> : " << \
+    end - start << " us" << std::endl;
+    
+}
+
 int main(int argc, char **argv)
 {
     std::vector <t_element> tab;
+    double start;
+    double end;
     int size;
+
+    start = get_time();
     if(init_tab(tab, argc, argv) == false)
         return(std::cout << "Error" << std::endl, 0);
     size = tab.size();
     Ford_johnson_algorithm(tab);
-    checker(tab, size);
+    end = get_time();
+    print_time_process(tab, start, end); 
+    // checker(tab, size);
 }
 
